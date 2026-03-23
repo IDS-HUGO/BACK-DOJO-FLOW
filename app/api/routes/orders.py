@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime
+from typing import List, Union
 import secrets
 import string
 
@@ -97,7 +98,7 @@ def confirm_payment(order_id: int, db: Session = Depends(get_db)):
     
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
-        raise HTTPException(status_code=status.HTTP_404_NOT_found, detail="Order not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
     
     if order.status != OrderStatus.PENDING:
         raise HTTPException(
@@ -135,7 +136,7 @@ def confirm_payment(order_id: int, db: Session = Depends(get_db)):
     return OrderResponse.from_orm(order)
 
 
-@router.get("/", response_model=list[OrderListResponse])
+@router.get("/", response_model=List[OrderListResponse])
 def list_orders(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """List all orders (admin only - user must be owner@dojoflow.com)."""
     
@@ -157,7 +158,7 @@ def get_order(order_id: int, db: Session = Depends(get_db)):
     return OrderResponse.from_orm(order)
 
 
-@router.get("/status/{email}", response_model=OrderResponse | dict)
+@router.get("/status/{email}", response_model=Union[OrderResponse, dict])
 def get_order_by_email(email: str, db: Session = Depends(get_db)):
     """Get order status by email (public for tracking)."""
     
