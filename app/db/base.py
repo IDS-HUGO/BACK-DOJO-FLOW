@@ -3,6 +3,7 @@ from app.models.attendance import Attendance
 from app.models.belt_progress import BeltProgress
 from app.models.coupon import Coupon
 from app.models.marketplace_item import MarketplaceItem
+from app.models.order import Order
 from app.models.payment import Payment
 from app.models.plan import Plan
 from app.models.schedule import Schedule
@@ -16,6 +17,7 @@ __all__ = [
     "Student",
     "Attendance",
     "Payment",
+    "Order",
     "BeltProgress",
     "Plan",
     "MarketplaceItem",

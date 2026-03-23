@@ -8,6 +8,7 @@ from app.api.routes import (
 	coupons,
 	dashboard,
 	marketplace,
+	orders,
 	payments,
 	plans,
 	reports,
@@ -21,6 +22,7 @@ api_router.include_router(auth.router)
 api_router.include_router(students.router)
 api_router.include_router(attendance.router)
 api_router.include_router(payments.router)
+api_router.include_router(orders.router)
 api_router.include_router(belts.router)
 api_router.include_router(plans.router)
 api_router.include_router(dashboard.router)
