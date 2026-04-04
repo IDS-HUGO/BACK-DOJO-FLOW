@@ -33,7 +33,7 @@ class Order(Base, TimestampMixin):
     
     amount: Mapped[float] = mapped_column(Float)
     status: Mapped[str] = mapped_column(SQLEnum(OrderStatus), default=OrderStatus.PENDING, index=True)
-    payment_method: Mapped[str] = mapped_column(String(50), default="stripe")
+    payment_method: Mapped[str] = mapped_column(String(50), default="paypal")
     transaction_id: Mapped[str] = mapped_column(String(255), nullable=True)
     
     paid_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)

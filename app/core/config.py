@@ -17,16 +17,28 @@ class Settings(BaseSettings):
     database_url: str | None = None
 
     cors_origins: str = "http://localhost:5173"
+    frontend_base_url: str = "http://localhost:5173"
+    reset_password_expire_minutes: int = 30
+
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str | None = None
+    paypal_client_id: str | None = None
+    paypal_client_secret: str | None = None
+    paypal_base_url: str = "https://api-m.sandbox.paypal.com"
+    paypal_success_url: str = "http://localhost:5173/app/payments"
+    paypal_cancel_url: str = "http://localhost:5173/app/payments"
+    paypal_plan_success_url: str = "http://localhost:5173/app/plans"
+    paypal_plan_cancel_url: str = "http://localhost:5173/app/plans"
 
     @property
     def sqlalchemy_database_uri(self) -> str:
         if self.database_url:
             return self.database_url
 
-        return (
-            f"mysql+pymysql://{self.mysql_user}:{self.mysql_password}"
-            f"@{self.mysql_host}:{self.mysql_port}/{self.mysql_db}?charset=utf8mb4"
-        )
+        return "sqlite:///./dojoflow.db"
 
 
 settings = Settings()

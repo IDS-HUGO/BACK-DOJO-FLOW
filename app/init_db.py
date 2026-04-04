@@ -25,6 +25,17 @@ def seed_data(db: Session) -> None:
             )
         )
 
+    existing_dojo_user = db.query(User).filter(User.email == "dojo_1@dojoflow.local").first()
+    if not existing_dojo_user:
+        db.add(
+            User(
+                email="dojo_1@dojoflow.local",
+                full_name="Dojo Demo",
+                hashed_password=create_password_hash("dojo1234"),
+                is_active=True,
+            )
+        )
+
     existing_plans = db.query(Plan).count()
     if existing_plans == 0:
         db.add_all(

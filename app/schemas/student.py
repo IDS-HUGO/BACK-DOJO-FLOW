@@ -20,3 +20,7 @@ class StudentRead(StudentBase):
 
     class Config:
         from_attributes = True
+
+
+class StudentCreateResponse(StudentRead):
+    credentials_email_sent: bool
