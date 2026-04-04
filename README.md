@@ -41,6 +41,49 @@ python -m app.init_db
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+## Comandos rapidos (API)
+
+```bash
+# Ubicarse en el proyecto
+cd D:/UNIVERSIDAD/ANALISIS FINANCIERO/Dojo-Flow-API
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Crear/actualizar tablas y seed de datos
+python -m app.init_db
+
+# Levantar API en local
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Verificacion rapida de sintaxis de modulos
+python -m compileall app
+```
+
+## Comandos rapidos (frontend + API)
+
+Terminal 1 (API):
+
+```bash
+cd D:/UNIVERSIDAD/ANALISIS FINANCIERO/Dojo-Flow-API
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Terminal 2 (frontend):
+
+```bash
+cd D:/UNIVERSIDAD/ANALISIS FINANCIERO/Dojo-Flow
+npm install
+npm run dev
+```
+
+Chequeos funcionales recomendados:
+
+1. Crear alumno y validar envio de credenciales.
+2. Iniciar sesion staff y revisar modulos (students, attendance, schedules, marketplace, reports).
+3. Iniciar sesion alumno y pagar desde portal /student.
+4. Contratar plan desde /app/plans y confirmar estado en retorno de PayPal.
+
 ## Usuario inicial
 
 - Usuario: `owner@dojoflow.com`
