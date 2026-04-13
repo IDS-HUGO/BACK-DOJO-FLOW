@@ -2,6 +2,10 @@
 
 API backend para operación SaaS de academias de artes marciales, separada del frontend y lista para entorno local/profesional.
 
+## Manual para principiantes 0
+
+- [Manual completo de la API](MANUAL_PARA_PRINCIPIANTES_0.md)
+
 ## Ubicación del proyecto
 
 - API: `D:/UNIVERSIDAD/ANALISIS FINANCIERO/Dojo-Flow-API`
