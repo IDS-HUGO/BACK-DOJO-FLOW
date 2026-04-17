@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: dojoflow-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-dojoflow}
+      MYSQL_USER: ${DB_USER:-dojoflow_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-dojoflow_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - dojoflow-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dojoflow-backend
+    environment:
+      DATABASE_URL: mysql+pymysql://${DB_USER:-dojoflow_user}:${DB_PASSWORD:-dojoflow_password}@mysql:3306/${DB_NAME:-dojoflow}
+      SQLALCHEMY_ECHO: "false"
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      ENVIRONMENT: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dojoflow-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  dojoflow-network:
+    driver: bridge

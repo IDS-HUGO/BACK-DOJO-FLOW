@@ -1,17 +1,19 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from app.models.base import Base, TimestampMixin
-
 
 class Teacher(Base, TimestampMixin):
     __tablename__ = "teachers"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, index=True)
-    phone = Column(String(20))
-    specialties = Column(String(255))  # JSON-like: "BJJ,MMA,Karate"
-    hourly_rate = Column(Integer, default=50)  # $ por hora
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    phone = Column(String(20), nullable=True)
+    specialties = Column(String(500), nullable=True)
+    hourly_rate = Column(Float, default=50.0)
     active = Column(Boolean, default=True)
+    academy_id = Column(Integer, ForeignKey('academy_profile.id'), nullable=False)
 
-    def __repr__(self):
-        return f"<Teacher(id={self.id}, name={self.name}, email={self.email})>"
+    # Relaciones
+    academy = relationship("AcademyProfile", back_populates="teachers")
+    schedules = relationship("Schedule", secondary="schedule_teacher", back_populates="teachers")

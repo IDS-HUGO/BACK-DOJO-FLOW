@@ -9,6 +9,7 @@ class PaymentCreate(BaseModel):
     method: str
 
 
+
 class PaymentRead(BaseModel):
     id: int
     student_id: int

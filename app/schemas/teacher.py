@@ -20,3 +20,4 @@ class TeacherRead(TeacherBase):
 
     class Config:
         from_attributes = True
+

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
@@ -15,3 +15,5 @@ class BeltProgress(Base):
     exam_score: Mapped[int] = mapped_column(Integer)
     approved: Mapped[bool] = mapped_column(Boolean, default=False)
     evaluated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    student = relationship("Student", back_populates="belt_progress")   

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,6 +12,7 @@ from app.core.mailer import send_password_reset_email
 from app.core.security import create_access_token, create_password_hash, verify_password
 from app.db.session import get_db
 from app.models.student import Student
+from app.models.teacher import Teacher
 from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
@@ -20,6 +22,7 @@ from app.schemas.auth import (
     Token,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -44,8 +47,11 @@ def _decode_password_reset_token(token: str) -> str:
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Login endpoint that distinguishes between dojo owner, teacher, and student."""
+    
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
+        logger.warning(f"❌ Login failed for {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -53,9 +59,35 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         )
 
     access_token = create_access_token(subject=user.email)
+    
+    # ✅ DIFERENCIAR ROLES
+    # Primero verificar si es estudiante
     student = db.query(Student).filter(Student.email == user.email).first()
-    account_type = "student" if student else "staff"
-    return Token(access_token=access_token, account_type=account_type, student_id=student.id if student else None)
+    if student:
+        logger.info(f"✅ Login student: {user.email} (ID: {student.id})")
+        return Token(
+            access_token=access_token, 
+            account_type="student", 
+            student_id=student.id
+        )
+    
+    # Luego verificar si es instructor/teacher
+    teacher = db.query(Teacher).filter(Teacher.email == user.email).first()
+    if teacher:
+        logger.info(f"✅ Login teacher: {user.email} (ID: {teacher.id})")
+        return Token(
+            access_token=access_token, 
+            account_type="teacher", 
+            student_id=None
+        )
+    
+    # Si no es ni estudiante ni instructor, es dojo owner
+    logger.info(f"✅ Login dojo owner: {user.email}")
+    return Token(
+        access_token=access_token, 
+        account_type="dojo", 
+        student_id=None
+    )
 
 
 @router.post("/forgot-password", response_model=MessageResponse)

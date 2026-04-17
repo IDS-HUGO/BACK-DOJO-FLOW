@@ -14,28 +14,36 @@ from app.models.user import User
 
 
 def seed_data(db: Session) -> None:
+    # 1. Crear Users primero
     existing_user = db.query(User).filter(User.email == "owner@dojoflow.com").first()
     if not existing_user:
-        db.add(
-            User(
-                email="owner@dojoflow.com",
-                full_name="Dojo Owner",
-                hashed_password=create_password_hash("admin123"),
-                is_active=True,
-            )
+        owner = User(
+            email="owner@dojoflow.com",
+            full_name="Dojo Owner",
+            hashed_password=create_password_hash("admin123"),
+            is_active=True,
         )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+    else:
+        owner = existing_user
 
     existing_dojo_user = db.query(User).filter(User.email == "dojo_1@dojoflow.local").first()
     if not existing_dojo_user:
-        db.add(
-            User(
-                email="dojo_1@dojoflow.local",
-                full_name="Dojo Demo",
-                hashed_password=create_password_hash("dojo1234"),
-                is_active=True,
-            )
+        dojo_user = User(
+            email="dojo_1@dojoflow.local",
+            full_name="Dojo Demo",
+            hashed_password=create_password_hash("dojo1234"),
+            is_active=True,
         )
+        db.add(dojo_user)
+        db.commit()
+        db.refresh(dojo_user)
+    else:
+        dojo_user = existing_dojo_user
 
+    # 2. Crear Plans
     existing_plans = db.query(Plan).count()
     if existing_plans == 0:
         db.add_all(
@@ -60,21 +68,32 @@ def seed_data(db: Session) -> None:
                 ),
             ]
         )
+        db.commit()
 
-    existing_profile = db.query(AcademyProfile).count()
-    if existing_profile == 0:
-        db.add(
-            AcademyProfile(
-                dojo_name="DojoFlow Central",
-                owner_name="Dojo Owner",
-                contact_email="owner@dojoflow.com",
-                contact_phone="+52 555 000 0000",
-                city="Ciudad de México",
-                timezone="America/Mexico_City",
-                currency="MXN",
-            )
+    # 3. Crear AcademyProfile con user_id válido
+    existing_profile = db.query(AcademyProfile).filter(AcademyProfile.user_id == owner.id).first()
+    if not existing_profile:
+        academy = AcademyProfile(
+            user_id=owner.id,
+            dojo_name="Dojo Flow Principal",
+            owner_name="Dojo Owner",
+            contact_email="owner@dojoflow.com",
+            contact_phone="+52 555 000 0000",
+            city="Ciudad de México",
+            timezone="America/Mexico_City",
+            currency="MXN",
         )
+        db.add(academy)
+        db.commit()
+        db.refresh(academy)
+    else:
+        academy = existing_profile
 
+    # Valida que academy no sea None antes de continuar
+    if academy is None:
+        raise ValueError("AcademyProfile no pudo ser creado")
+
+    # 4. Crear MarketplaceItems
     existing_marketplace_items = db.query(MarketplaceItem).count()
     if existing_marketplace_items == 0:
         db.add_all(
@@ -84,7 +103,9 @@ def seed_data(db: Session) -> None:
                 MarketplaceItem(name="Espinilleras TKD", category="Protección", price=749, stock=28, active=True),
             ]
         )
+        db.commit()
 
+    # 5. Crear Teachers CON academy_id
     existing_teachers = db.query(Teacher).count()
     if existing_teachers == 0:
         db.add_all(
@@ -95,6 +116,7 @@ def seed_data(db: Session) -> None:
                     phone="+52 555 111 1111",
                     specialties="Karate,TKD",
                     hourly_rate=75,
+                    academy_id=academy.id,
                     active=True,
                 ),
                 Teacher(
@@ -103,6 +125,7 @@ def seed_data(db: Session) -> None:
                     phone="+52 555 222 2222",
                     specialties="BJJ",
                     hourly_rate=85,
+                    academy_id=academy.id,
                     active=True,
                 ),
                 Teacher(
@@ -111,76 +134,91 @@ def seed_data(db: Session) -> None:
                     phone="+52 555 333 3333",
                     specialties="MMA,Boxing",
                     hourly_rate=90,
+                    academy_id=academy.id,
                     active=True,
                 ),
             ]
         )
+        db.commit()
 
-    existing_schedules = db.query(Schedule).count()
-    if existing_schedules == 0:
-        # Need teacher IDs
-        db.flush()  # commit to get IDs
-        teachers = db.query(Teacher).all()
-        if teachers:
-            db.add_all(
-                [
-                    Schedule(
-                        class_type="BJJ",
-                        day_of_week=0,  # Lunes
-                        start_time=time(18, 0),
-                        end_time=time(19, 30),
-                        teacher_id=teachers[1].id,
-                        max_students=15,
-                        active=True,
-                    ),
-                    Schedule(
-                        class_type="BJJ",
-                        day_of_week=2,  # Miércoles
-                        start_time=time(18, 0),
-                        end_time=time(19, 30),
-                        teacher_id=teachers[1].id,
-                        max_students=15,
-                        active=True,
-                    ),
-                    Schedule(
-                        class_type="Karate",
-                        day_of_week=1,  # Martes
-                        start_time=time(17, 0),
-                        end_time=time(18, 0),
-                        teacher_id=teachers[0].id,
-                        max_students=20,
-                        active=True,
-                    ),
-                    Schedule(
-                        class_type="Karate",
-                        day_of_week=4,  # Viernes
-                        start_time=time(17, 0),
-                        end_time=time(18, 0),
-                        teacher_id=teachers[0].id,
-                        max_students=20,
-                        active=True,
-                    ),
-                    Schedule(
-                        class_type="MMA",
-                        day_of_week=3,  # Jueves
-                        start_time=time(19, 0),
-                        end_time=time(20, 30),
-                        teacher_id=teachers[2].id,
-                        max_students=12,
-                        active=True,
-                    ),
-                    Schedule(
-                        class_type="MMA",
-                        day_of_week=5,  # Sábado
-                        start_time=time(10, 0),
-                        end_time=time(11, 30),
-                        teacher_id=teachers[2].id,
-                        max_students=12,
-                        active=True,
-                    ),
-                ]
-            )
+    # 6. Crear Schedules CON academy_id
+# ...existing code...
 
+    # 6. Crear Schedules CON academy_id (solo si la columna existe)
+    try:
+        existing_schedules = db.query(Schedule).count()
+        if existing_schedules == 0:
+            teachers = db.query(Teacher).all()
+            if teachers:
+                db.add_all(
+                    [
+                        Schedule(
+                            class_type="BJJ",
+                            day_of_week=0,
+                            start_time="18:00",
+                            end_time="19:30",
+                            academy_id=academy.id,
+                            max_students=15,
+                            active=True,
+                        ),
+                        Schedule(
+                            class_type="BJJ",
+                            day_of_week=2,
+                            start_time="18:00",
+                            end_time="19:30",
+                            academy_id=academy.id,
+                            max_students=15,
+                            active=True,
+                        ),
+                        Schedule(
+                            class_type="Karate",
+                            day_of_week=1,
+                            start_time="17:00",
+                            end_time="18:00",
+                            academy_id=academy.id,
+                            max_students=20,
+                            active=True,
+                        ),
+                        Schedule(
+                            class_type="Karate",
+                            day_of_week=4,
+                            start_time="17:00",
+                            end_time="18:00",
+                            academy_id=academy.id,
+                            max_students=20,
+                            active=True,
+                        ),
+                        Schedule(
+                            class_type="MMA",
+                            day_of_week=3,
+                            start_time="19:00",
+                            end_time="20:30",
+                            academy_id=academy.id,
+                            max_students=12,
+                            active=True,
+                        ),
+                        Schedule(
+                            class_type="MMA",
+                            day_of_week=5,
+                            start_time="10:00",
+                            end_time="11:30",
+                            academy_id=academy.id,
+                            max_students=12,
+                            active=True,
+                        ),
+                    ]
+                )
+                db.commit()
+    except Exception as e:
+        print(f"⚠️  Advertencia: No se pudieron crear schedules. Asegúrate de ejecutar la migración SQL:")
+        print(f"ALTER TABLE schedules ADD COLUMN academy_id INT NOT NULL;")
+        print(f"ALTER TABLE schedules ADD FOREIGN KEY (academy_id) REFERENCES academy_profile(id);")
+        print(f"Error: {e}")
+        db.rollback()
+
+# ...existing code...
+
+    # 7. Crear Coupons
     existing_coupons = db.query(Coupon).count()
     if existing_coupons == 0:
         db.add_all(
@@ -204,15 +242,14 @@ def seed_data(db: Session) -> None:
                 Coupon(
                     code="LOYALTY5",
                     discount_percent=5,
-                    max_uses=None,  # unlimited
+                    max_uses=None,
                     valid_until=date(2027, 12, 31),
                     active=True,
                     description="5% para clientes recurrentes",
                 ),
             ]
         )
-
-    db.commit()
+        db.commit()
 
 
 def init() -> None:

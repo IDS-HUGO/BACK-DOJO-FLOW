@@ -33,12 +33,12 @@ class Order(Base, TimestampMixin):
     
     amount: Mapped[float] = mapped_column(Float)
     status: Mapped[str] = mapped_column(SQLEnum(OrderStatus), default=OrderStatus.PENDING, index=True)
-    payment_method: Mapped[str] = mapped_column(String(50), default="paypal")
-    transaction_id: Mapped[str] = mapped_column(String(255), nullable=True)
+    payment_method: Mapped[str | None] = mapped_column(String(50), default="paypal", nullable=True)
+    transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     
-    paid_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     
     # Credentials generated after payment
-    generated_email: Mapped[str] = mapped_column(String(255), nullable=True)
-    generated_password: Mapped[str] = mapped_column(String(255), nullable=True)
-    credentials_sent_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    generated_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    generated_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    credentials_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
